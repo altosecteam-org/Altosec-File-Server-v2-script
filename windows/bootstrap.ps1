@@ -24,7 +24,6 @@ param(
 $ErrorActionPreference = "Stop"
 
 $RUNNER_DIR = "C:\actions-runner"
-$RUNNER_VER = "2.320.0"
 $REPO_URL   = "https://github.com/altosecteam-org/Altosec-File-Server-v2"
 $API_BASE   = "https://api.github.com/repos/altosecteam-org/Altosec-File-Server-v2"
 
@@ -34,6 +33,11 @@ Write-Host "==> Registering GitHub Actions runner..."
 
 if (-not (Test-Path "$RUNNER_DIR\config.cmd")) {
     New-Item -ItemType Directory -Force $RUNNER_DIR | Out-Null
+
+    # Fetch latest runner version dynamically
+    Write-Host "  Fetching latest runner version..."
+    $release = Invoke-RestMethod "https://api.github.com/repos/actions/runner/releases/latest"
+    $RUNNER_VER = $release.tag_name -replace '^v', ''
     Write-Host "  Downloading runner v$RUNNER_VER..."
     $zip = "$env:TEMP\actions-runner.zip"
     Invoke-WebRequest "https://github.com/actions/runner/releases/download/v$RUNNER_VER/actions-runner-win-x64-$RUNNER_VER.zip" -OutFile $zip
@@ -42,9 +46,7 @@ if (-not (Test-Path "$RUNNER_DIR\config.cmd")) {
     Write-Host "  Runner already downloaded"
 }
 
-Set-Location $RUNNER_DIR
-
-& .\config.cmd `
+& "$RUNNER_DIR\config.cmd" `
     --url        $REPO_URL `
     --token      $RunnerToken `
     --name       "$RunnerMode-runner" `
@@ -53,8 +55,8 @@ Set-Location $RUNNER_DIR
     --unattended `
     --replace
 
-& .\svc.ps1 install
-& .\svc.ps1 start
+& "$RUNNER_DIR\svc.ps1" install
+& "$RUNNER_DIR\svc.ps1" start
 
 Write-Host "  Runner registered and running (label: $RunnerMode)"
 
