@@ -31,19 +31,25 @@ $API_BASE   = "https://api.github.com/repos/altosecteam-org/Altosec-File-Server-
 Write-Host ""
 Write-Host "==> Registering GitHub Actions runner..."
 
-if (-not (Test-Path "$RUNNER_DIR\config.cmd")) {
-    New-Item -ItemType Directory -Force $RUNNER_DIR | Out-Null
+# Always fetch latest version and re-download if outdated
+Write-Host "  Fetching latest runner version..."
+$release    = Invoke-RestMethod "https://api.github.com/repos/actions/runner/releases/latest"
+$RUNNER_VER = $release.tag_name -replace '^v', ''
 
-    # Fetch latest runner version dynamically
-    Write-Host "  Fetching latest runner version..."
-    $release = Invoke-RestMethod "https://api.github.com/repos/actions/runner/releases/latest"
-    $RUNNER_VER = $release.tag_name -replace '^v', ''
-    Write-Host "  Downloading runner v$RUNNER_VER..."
+$installedVer = ""
+$verFile = "$RUNNER_DIR\.runner-version"
+if (Test-Path $verFile) { $installedVer = (Get-Content $verFile).Trim() }
+
+if ($installedVer -ne $RUNNER_VER) {
+    Write-Host "  Downloading runner v$RUNNER_VER (installed: '$installedVer')..."
+    if (Test-Path $RUNNER_DIR) { Remove-Item $RUNNER_DIR -Recurse -Force }
+    New-Item -ItemType Directory -Force $RUNNER_DIR | Out-Null
     $zip = "$env:TEMP\actions-runner.zip"
     Invoke-WebRequest "https://github.com/actions/runner/releases/download/v$RUNNER_VER/actions-runner-win-x64-$RUNNER_VER.zip" -OutFile $zip
     Expand-Archive $zip $RUNNER_DIR -Force
+    Set-Content $verFile $RUNNER_VER
 } else {
-    Write-Host "  Runner already downloaded"
+    Write-Host "  Runner v$RUNNER_VER already up to date"
 }
 
 & "$RUNNER_DIR\config.cmd" `
