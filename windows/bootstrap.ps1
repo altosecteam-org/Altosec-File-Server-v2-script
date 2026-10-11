@@ -42,7 +42,15 @@ if (Test-Path $verFile) { $installedVer = (Get-Content $verFile).Trim() }
 
 if ($installedVer -ne $RUNNER_VER) {
     Write-Host "  Downloading runner v$RUNNER_VER (installed: '$installedVer')..."
-    if (Test-Path $RUNNER_DIR) { Remove-Item $RUNNER_DIR -Recurse -Force }
+    if (Test-Path $RUNNER_DIR) {
+        # Stop running runner before deleting (avoids locked DLL errors)
+        schtasks /End    /TN "GitHubActionsRunner" 2>$null | Out-Null
+        schtasks /Delete /TN "GitHubActionsRunner" /F 2>$null | Out-Null
+        Stop-Process -Name "Runner.Listener" -Force -ErrorAction SilentlyContinue
+        Stop-Process -Name "Runner.Worker"   -Force -ErrorAction SilentlyContinue
+        Start-Sleep 4
+        Remove-Item $RUNNER_DIR -Recurse -Force
+    }
     New-Item -ItemType Directory -Force $RUNNER_DIR | Out-Null
     $zip = "$env:TEMP\actions-runner.zip"
     Invoke-WebRequest "https://github.com/actions/runner/releases/download/v$RUNNER_VER/actions-runner-win-x64-$RUNNER_VER.zip" -OutFile $zip
