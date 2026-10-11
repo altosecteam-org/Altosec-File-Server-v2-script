@@ -61,8 +61,10 @@ if ($installedVer -ne $RUNNER_VER) {
     --unattended `
     --replace
 
-& "$RUNNER_DIR\svc.ps1" install
-& "$RUNNER_DIR\svc.ps1" start
+# svc.ps1 was removed in newer runner versions — use a scheduled task instead
+Write-Host "  Installing runner as startup task..."
+schtasks /Create /TN "GitHubActionsRunner" /TR "cmd /c cd /d $RUNNER_DIR && run.cmd" /SC ONSTART /RU SYSTEM /F | Out-Null
+schtasks /Run /TN "GitHubActionsRunner" | Out-Null
 
 Write-Host "  Runner registered and running (label: $RunnerMode)"
 
