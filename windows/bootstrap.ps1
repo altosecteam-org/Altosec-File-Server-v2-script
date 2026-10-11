@@ -83,6 +83,7 @@ $headers = @{
 $body = @{
     ref    = "main"
     inputs = @{
+        github_pat   = $GithubPat
         runner_token = "skip"
         restore_mode = $RestoreMode
         backup_zip   = $BackupZip
