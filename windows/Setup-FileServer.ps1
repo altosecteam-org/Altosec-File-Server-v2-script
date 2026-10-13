@@ -65,7 +65,9 @@ param(
     [Parameter(Mandatory)][string]$RunnerToken,
     [Parameter(Mandatory)]
     [ValidateSet("fresh","restore")][string]$RestoreMode,
-    [string]$BackupZip   = ""
+    [string]$BackupZip    = "",
+    [string]$CfOriginCert = "",
+    [string]$CfOriginKey  = ""
 )
 
 Set-ExecutionPolicy Bypass -Scope Process -Force
