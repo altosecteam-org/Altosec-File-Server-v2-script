@@ -8,14 +8,16 @@
     & ([scriptblock]::Create((irm 'https://raw.githubusercontent.com/altosecteam-org/Altosec-File-Server-v2-script/main/windows/bootstrap.ps1'))) `
         -RunnerToken "AXXXXXXXXXXXXXXXXXXXXXXXXXX" `
         -GithubPat   "ghp_YOUR_PAT" `
-        -BackupZip   "C:\backup-2026-10-11.zip"
+        -Domain      "your-domain.com" `
+        -BackupZip   "C:\deploy\backup-2026-10-13.zip"
 
     # Fresh install:
-    & ([scriptblock]::Create((irm 'URL'))) -RunnerToken "TOKEN" -GithubPat "ghp_..." -RestoreMode "fresh"
+    & ([scriptblock]::Create((irm 'URL'))) -RunnerToken "TOKEN" -GithubPat "ghp_..." -Domain "your-domain.com" -RestoreMode "fresh"
 #>
 param(
     [Parameter(Mandatory)][string]$RunnerToken,
     [Parameter(Mandatory)][string]$GithubPat,
+    [Parameter(Mandatory)][string]$Domain,
     [string]$BackupZip   = "skip",
     [string]$RestoreMode = "restore",
     [string]$RunnerMode  = "staging"
@@ -93,6 +95,7 @@ $body = @{
     inputs = @{
         github_pat   = $GithubPat
         runner_token = "skip"
+        domain       = $Domain
         restore_mode = $RestoreMode
         backup_zip   = $BackupZip
     }
