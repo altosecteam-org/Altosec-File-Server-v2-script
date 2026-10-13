@@ -53,15 +53,16 @@ $installedVer = ""
 $verFile = "$RUNNER_DIR\.runner-version"
 if (Test-Path $verFile) { $installedVer = (Get-Content $verFile).Trim() }
 
+# Always stop any running runner before configuring (--replace fails if runner is live)
+schtasks /End    /TN "GitHubActionsRunner" 2>$null | Out-Null
+Stop-Process -Name "Runner.Listener" -Force -ErrorAction SilentlyContinue
+Stop-Process -Name "Runner.Worker"   -Force -ErrorAction SilentlyContinue
+Start-Sleep 3
+
 if ($installedVer -ne $RUNNER_VER) {
     Write-Host "  Downloading runner v$RUNNER_VER (installed: '$installedVer')..."
     if (Test-Path $RUNNER_DIR) {
-        # Stop running runner before deleting (avoids locked DLL errors)
-        schtasks /End    /TN "GitHubActionsRunner" 2>$null | Out-Null
         schtasks /Delete /TN "GitHubActionsRunner" /F 2>$null | Out-Null
-        Stop-Process -Name "Runner.Listener" -Force -ErrorAction SilentlyContinue
-        Stop-Process -Name "Runner.Worker"   -Force -ErrorAction SilentlyContinue
-        Start-Sleep 4
         Remove-Item $RUNNER_DIR -Recurse -Force
     }
     New-Item -ItemType Directory -Force $RUNNER_DIR | Out-Null
