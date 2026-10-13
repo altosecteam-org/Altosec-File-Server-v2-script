@@ -28,13 +28,13 @@ On the **old server**, open PowerShell as Administrator:
 C:\AltosecApp\scripts\backup.ps1
 ```
 
-Produces a `.zip` at `%TEMP%\altosec_backup\backup-YYYY-MM-DD.zip`.
+Produces `C:\altosec_backup\backup-YYYY-MM-DD.zip`.
 
 ---
 
 ### Step 2 — Transfer backup to the new server
 
-Copy the `.zip` to the new server, e.g. `C:\backup-YYYY-MM-DD.zip`.
+Copy the `.zip` to the new server, e.g. `C:\deploy\backup-YYYY-MM-DD.zip`.
 
 ---
 
@@ -50,16 +50,7 @@ Verify: `Resolve-DnsName your-domain.com`
 
 ---
 
-### Step 4 — Get a runner token
-
-> Expires in **1 hour** — do this immediately before Step 5.
-
-Go to: `https://github.com/altosecteam-org/Altosec-File-Server-v2/settings/actions/runners/new`
-→ Windows / x64 → copy the token from the `--token` line.
-
----
-
-### Step 5 — Bootstrap (one command)
+### Step 4 — Bootstrap (one command)
 
 Open **PowerShell as Administrator** on the new server:
 
@@ -67,22 +58,23 @@ Open **PowerShell as Administrator** on the new server:
 Set-ExecutionPolicy Bypass -Scope Process -Force
 
 & ([scriptblock]::Create((irm 'https://raw.githubusercontent.com/altosecteam-org/Altosec-File-Server-v2-script/main/windows/bootstrap.ps1'))) `
-    -RunnerToken "PASTE_RUNNER_TOKEN" `
-    -GithubPat   "ghp_YOUR_PAT" `
-    -BackupZip   "C:\backup-2026-10-11.zip"
+    -GithubPat "ghp_YOUR_PAT" `
+    -Domain    "your-domain.com" `
+    -BackupZip "C:\deploy\backup-YYYY-MM-DD.zip"
 ```
 
 This will:
-1. Register this server as a GitHub Actions runner
-2. Trigger the full setup workflow automatically
-3. All credentials are pulled from GitHub environment secrets — nothing else to type
+1. Fetch a runner registration token automatically using the PAT
+2. Register this server as a GitHub Actions runner
+3. Trigger the full setup workflow automatically
+4. All credentials are pulled from GitHub environment secrets — nothing else to type
 
 Monitor progress at:
 `https://github.com/altosecteam-org/Altosec-File-Server-v2/actions`
 
 ---
 
-### Step 6 — Verify
+### Step 5 — Verify
 
 ```powershell
 sc query AltosecFileServer   # STATE: RUNNING
@@ -95,12 +87,12 @@ Open `https://your-domain.com` and `https://your-domain.com:2083` in a browser.
 
 ## Fresh install
 
-Same as migration, skip Steps 1–2, and change Step 5:
+Same as migration, skip Steps 1–2, and change Step 4:
 
 ```powershell
 & ([scriptblock]::Create((irm 'https://raw.githubusercontent.com/altosecteam-org/Altosec-File-Server-v2-script/main/windows/bootstrap.ps1'))) `
-    -RunnerToken "PASTE_RUNNER_TOKEN" `
     -GithubPat   "ghp_YOUR_PAT" `
+    -Domain      "your-domain.com" `
     -RestoreMode "fresh"
 ```
 
