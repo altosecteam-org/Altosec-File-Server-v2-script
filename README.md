@@ -34,7 +34,7 @@ Produces a `.zip` at `%TEMP%\altosec_backup\backup-YYYY-MM-DD.zip`.
 
 ### Step 2 — Transfer backup to the new server
 
-Copy the `.zip` to the new server, e.g. `C:\backup-2026-10-11.zip`.
+Copy the `.zip` to the new server, e.g. `C:\backup-YYYY-MM-DD.zip`.
 
 ---
 
