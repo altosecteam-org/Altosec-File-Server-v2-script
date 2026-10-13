@@ -61,8 +61,7 @@ param(
     [string]$DbxKey      = "",
     [string]$DbxSecret   = "",
     [string]$DbxRefresh  = "",
-    [Parameter(Mandatory)]
-    [ValidateSet("staging","production")][string]$RunnerMode,
+    [Parameter(Mandatory)][string]$RunnerMode,
     [Parameter(Mandatory)][string]$RunnerToken,
     [Parameter(Mandatory)]
     [ValidateSet("fresh","restore")][string]$RestoreMode,
