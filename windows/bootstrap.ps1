@@ -6,26 +6,28 @@
 .EXAMPLE
     # Migration (restore from backup):
     & ([scriptblock]::Create((irm 'https://raw.githubusercontent.com/altosecteam-org/Altosec-File-Server-v2-script/main/windows/bootstrap.ps1'))) `
-        -GithubPat "ghp_YOUR_PAT" `
-        -Domain    "your-domain.com" `
-        -BackupZip "C:\deploy\backup-2026-10-13.zip"
+        -GithubPat   "ghp_YOUR_PAT" `
+        -Domain      "your-domain.com" `
+        -BackupZip   "C:\deploy\backup-2026-10-13.zip" `
+        -Environment "production2"
 
     # Fresh install:
-    & ([scriptblock]::Create((irm 'URL'))) -GithubPat "ghp_..." -Domain "your-domain.com" -RestoreMode "fresh"
+    & ([scriptblock]::Create((irm 'URL'))) -GithubPat "ghp_..." -Domain "your-domain.com" -RestoreMode "fresh" -Environment "production2"
 #>
 param(
     [Parameter(Mandatory)][string]$GithubPat,
     [Parameter(Mandatory)][string]$Domain,
     [string]$BackupZip   = "skip",
     [string]$RestoreMode = "restore",
-    [string]$RunnerMode  = "staging"
+    [string]$Environment = "staging"
 )
 
 $ErrorActionPreference = "Stop"
 
-$RUNNER_DIR = "C:\actions-runner"
-$REPO_URL   = "https://github.com/altosecteam-org/Altosec-File-Server-v2"
-$API_BASE   = "https://api.github.com/repos/altosecteam-org/Altosec-File-Server-v2"
+$RUNNER_DIR  = "C:\actions-runner"
+$REPO_URL    = "https://github.com/altosecteam-org/Altosec-File-Server-v2"
+$API_BASE    = "https://api.github.com/repos/altosecteam-org/Altosec-File-Server-v2"
+$RunnerMode  = $Environment
 
 $headers = @{
     Authorization = "token $GithubPat"
@@ -99,6 +101,7 @@ $body = @{
     inputs = @{
         github_pat   = $GithubPat
         runner_token = "skip"
+        environment  = $Environment
         domain       = $Domain
         restore_mode = $RestoreMode
         backup_zip   = $BackupZip

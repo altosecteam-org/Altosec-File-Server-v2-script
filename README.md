@@ -58,10 +58,13 @@ Open **PowerShell as Administrator** on the new server:
 Set-ExecutionPolicy Bypass -Scope Process -Force
 
 & ([scriptblock]::Create((irm 'https://raw.githubusercontent.com/altosecteam-org/Altosec-File-Server-v2-script/main/windows/bootstrap.ps1'))) `
-    -GithubPat "ghp_YOUR_PAT" `
-    -Domain    "your-domain.com" `
-    -BackupZip "C:\deploy\backup-YYYY-MM-DD.zip"
+    -GithubPat   "ghp_YOUR_PAT" `
+    -Domain      "your-domain.com" `
+    -BackupZip   "C:\deploy\backup-YYYY-MM-DD.zip" `
+    -Environment "your-environment-name"
 ```
+
+> `-Environment` must match the GitHub environment name that holds this server's secrets (e.g. `staging`, `production2`). Defaults to `staging`.
 
 This will:
 1. Fetch a runner registration token automatically using the PAT
@@ -93,7 +96,8 @@ Same as migration, skip Steps 1–2, and change Step 4:
 & ([scriptblock]::Create((irm 'https://raw.githubusercontent.com/altosecteam-org/Altosec-File-Server-v2-script/main/windows/bootstrap.ps1'))) `
     -GithubPat   "ghp_YOUR_PAT" `
     -Domain      "your-domain.com" `
-    -RestoreMode "fresh"
+    -RestoreMode "fresh" `
+    -Environment "your-environment-name"
 ```
 
 ---
