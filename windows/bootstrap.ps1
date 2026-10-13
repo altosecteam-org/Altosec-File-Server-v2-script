@@ -6,16 +6,14 @@
 .EXAMPLE
     # Migration (restore from backup):
     & ([scriptblock]::Create((irm 'https://raw.githubusercontent.com/altosecteam-org/Altosec-File-Server-v2-script/main/windows/bootstrap.ps1'))) `
-        -RunnerToken "AXXXXXXXXXXXXXXXXXXXXXXXXXX" `
-        -GithubPat   "ghp_YOUR_PAT" `
-        -Domain      "your-domain.com" `
-        -BackupZip   "C:\deploy\backup-2026-10-13.zip"
+        -GithubPat "ghp_YOUR_PAT" `
+        -Domain    "your-domain.com" `
+        -BackupZip "C:\deploy\backup-2026-10-13.zip"
 
     # Fresh install:
-    & ([scriptblock]::Create((irm 'URL'))) -RunnerToken "TOKEN" -GithubPat "ghp_..." -Domain "your-domain.com" -RestoreMode "fresh"
+    & ([scriptblock]::Create((irm 'URL'))) -GithubPat "ghp_..." -Domain "your-domain.com" -RestoreMode "fresh"
 #>
 param(
-    [Parameter(Mandatory)][string]$RunnerToken,
     [Parameter(Mandatory)][string]$GithubPat,
     [Parameter(Mandatory)][string]$Domain,
     [string]$BackupZip   = "skip",
@@ -29,11 +27,22 @@ $RUNNER_DIR = "C:\actions-runner"
 $REPO_URL   = "https://github.com/altosecteam-org/Altosec-File-Server-v2"
 $API_BASE   = "https://api.github.com/repos/altosecteam-org/Altosec-File-Server-v2"
 
-# --- 1. Register runner ---
+$headers = @{
+    Authorization = "token $GithubPat"
+    Accept        = "application/vnd.github.v3+json"
+}
+
+# --- 1. Fetch runner registration token via PAT ---
+Write-Host ""
+Write-Host "==> Fetching runner registration token..."
+$tokenResp   = Invoke-RestMethod "$API_BASE/actions/runners/registration-token" -Method Post -Headers $headers
+$RunnerToken = $tokenResp.token
+Write-Host "  Token obtained (expires $($tokenResp.expires_at))"
+
+# --- 2. Register runner ---
 Write-Host ""
 Write-Host "==> Registering GitHub Actions runner..."
 
-# Always fetch latest version and re-download if outdated
 Write-Host "  Fetching latest runner version..."
 $release    = Invoke-RestMethod "https://api.github.com/repos/actions/runner/releases/latest"
 $RUNNER_VER = $release.tag_name -replace '^v', ''
@@ -78,17 +87,12 @@ schtasks /Run /TN "GitHubActionsRunner" | Out-Null
 
 Write-Host "  Runner registered and running (label: $RunnerMode)"
 
-# --- 2. Trigger setup workflow ---
+# --- 3. Trigger setup workflow ---
 Write-Host ""
 Write-Host "==> Triggering setup-staging workflow..."
 
 # Brief pause for runner to connect to GitHub
 Start-Sleep 8
-
-$headers = @{
-    Authorization = "token $GithubPat"
-    Accept        = "application/vnd.github.v3+json"
-}
 
 $body = @{
     ref    = "main"
