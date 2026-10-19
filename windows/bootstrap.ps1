@@ -54,7 +54,9 @@ $verFile = "$RUNNER_DIR\.runner-version"
 if (Test-Path $verFile) { $installedVer = (Get-Content $verFile).Trim() }
 
 # Always stop any running runner before configuring (--replace fails if runner is live)
-try { schtasks /End /TN "GitHubActionsRunner" *>$null } catch {}
+$_eap = $ErrorActionPreference; $ErrorActionPreference = 'SilentlyContinue'
+schtasks /End /TN "GitHubActionsRunner" 2>$null
+$ErrorActionPreference = $_eap
 Stop-Process -Name "Runner.Listener" -Force -ErrorAction SilentlyContinue
 Stop-Process -Name "Runner.Worker"   -Force -ErrorAction SilentlyContinue
 Start-Sleep 3
@@ -62,7 +64,9 @@ Start-Sleep 3
 if ($installedVer -ne $RUNNER_VER) {
     Write-Host "  Downloading runner v$RUNNER_VER (installed: '$installedVer')..."
     if (Test-Path $RUNNER_DIR) {
-        try { schtasks /Delete /TN "GitHubActionsRunner" /F *>$null } catch {}
+        $_eap = $ErrorActionPreference; $ErrorActionPreference = 'SilentlyContinue'
+        schtasks /Delete /TN "GitHubActionsRunner" /F 2>$null
+        $ErrorActionPreference = $_eap
         Remove-Item $RUNNER_DIR -Recurse -Force
     }
     New-Item -ItemType Directory -Force $RUNNER_DIR | Out-Null
