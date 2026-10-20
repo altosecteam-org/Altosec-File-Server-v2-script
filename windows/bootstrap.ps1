@@ -17,6 +17,7 @@
 param(
     [Parameter(Mandatory)][string]$GithubPat,
     [Parameter(Mandatory)][string]$Domain,
+    [string]$BuildTag    = "build-main",
     [string]$BackupZip   = "skip",
     [string]$RestoreMode = "restore",
     [string]$Environment = "staging"
@@ -108,6 +109,7 @@ $body = @{
         runner_token = "skip"
         environment  = $Environment
         domain       = $Domain
+        build_tag    = $BuildTag
         restore_mode = $RestoreMode
         backup_zip   = $BackupZip
     }
