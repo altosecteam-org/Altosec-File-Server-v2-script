@@ -49,6 +49,7 @@
 param(
     [Parameter(Mandatory)][string]$Domain,
     [Parameter(Mandatory)][string]$GithubPat,
+    [string]$BuildTag    = "build-main",
     [Parameter(Mandatory)][string]$SecretKey,
     [Parameter(Mandatory)][string]$AdminUser,
     [Parameter(Mandatory)][string]$AdminHash,
